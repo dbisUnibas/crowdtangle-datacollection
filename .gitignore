@@ -1,3 +1,11 @@
+.idea/
+venv/
+facebook/
+instagram/
+config.py
+.json
+.jpg
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
