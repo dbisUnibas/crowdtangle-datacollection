@@ -1,4 +1,2 @@
-facebook-scraper
 ratelimit
 requests
-urllib
