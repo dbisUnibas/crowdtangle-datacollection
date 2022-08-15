@@ -138,7 +138,8 @@ def main():
 
         # Perform request every 'time_interval' days
         while True:
-            current_execution_date = datetime.now()
+            # 1 hour offset to make sure we don't search before all posts have been obtained.
+            current_execution_date = datetime.now() - timedelta(hours=1)
             request_name = platform + "-request-" + current_execution_date.strftime("%Y-%m-%dT%H:%M:%S")
 
             # Build request url
@@ -152,6 +153,7 @@ def main():
 
             print("Waiting until next timed request.")
 
+            # Next request will start from last execution time - 1h, and go until 23h from now (24h - 1h offset).
             time.sleep(86_400 * time_interval)
 
 
