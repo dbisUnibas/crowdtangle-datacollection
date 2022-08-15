@@ -19,7 +19,7 @@ Two modes are supported:
 - Obtaining images from a given starting date until now (`-s`)
 - Obtaining images periodically in time intervals every N days (`-t`)
 
-### Download images since some specified date
+### Download images and posts since some specified date
 
 `python3 apirequest.py [-f|-i] -o "listIds="<someListID>" -s "<start date>"`
 
@@ -27,7 +27,7 @@ Example: `python3 apirequest.py -f -o "listIds=1568443,1568444" -s "2021-12-31"`
 
 This request would download images and posts since the 31st of December, 2021.
 
-### Download images in time intervals every N days
+### Download images and posts in time intervals every N days
 
 `python3 apirequest.py [-f|-i] -o "listIds="<someListID>" -t <time_interval_days>`
 
