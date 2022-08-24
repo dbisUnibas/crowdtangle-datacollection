@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from ratelimit import limits
 import config
 import requests
+import traceback
 
 
 @limits(calls=5, period=60, raise_on_limit=False)
@@ -19,38 +20,49 @@ def api_call(request_url):
 # Loop through result and save images in account folders
 def retrieve_images_for_result(json_result, platform):
     for post_item in json_result['posts']:
+        # If we don't have any media objects, ignore the post.
+        if 'media' not in post_item:
+            continue
+
         # Since CrowdTangle never provides more than 1 image, this should be irrelevant.
         i = 0
 
         for media_item in post_item['media']:
-            if media_item['type'] == 'photo':
-                # Create directory for each account in photo results.
-                account_name = "".join([c for c in post_item['account']['name']
-                                        if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
-                account_id = post_item['account']['platformId']
+            # noinspection PyBroadException
+            try:
+                if media_item['type'] == 'photo':
+                    # Create directory for each account in photo results.
+                    account_name = "".join([c for c in post_item['account']['name']
+                                            if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
+                    account_id = post_item['account']['platformId']
 
-                if not os.path.exists(platform + "/" + account_name + "-" + account_id):
-                    os.mkdir(platform + "/" + account_name + "-" + account_id)
+                    if not os.path.exists(platform + "/" + account_name + "-" + account_id):
+                        os.mkdir(platform + "/" + account_name + "-" + account_id)
 
-                link = media_item['url']
+                    link = media_item['url']
 
-                # Download image, filename is timestamp of post
-                filename = platform + "/" + account_name + "-" + account_id + "/" + "".join(
-                    [c for c in post_item['date'] if c.isalpha() or c.isdigit() or c == ' ']).rstrip() + ' ' + str(i)
+                    # Download image, filename is timestamp of post
+                    filename = platform + "/" + account_name + "-" + account_id + "/" + "".join(
+                        [c for c in post_item['date'] if c.isalpha() or c.isdigit() or c == ' ']
+                    ).rstrip() + ' ' + str(i)
 
-                # Write post
-                with open(filename + ".json", "w", encoding="utf-8") as f:
-                    json.dump(post_item, f, ensure_ascii=False, indent=4)
+                    # Write post
+                    with open(filename + ".json", "w", encoding="utf-8") as f:
+                        json.dump(post_item, f, ensure_ascii=False, indent=4)
 
-                if link != '':
-                    if not os.path.exists(filename):
-                        try:
-                            request.urlretrieve(link, filename + ".jpg")
-                            print('Image ' + post_item['date'] + str(i) + '.jpg saved!')
-                        except error.HTTPError:
-                            print('Image ' + post_item['date'] + str(i) + '.jpg could not be downloaded.')
-                            print(link)
-                i += 1
+                    if link != '':
+                        if not os.path.exists(filename):
+                            try:
+                                request.urlretrieve(link, filename + ".jpg")
+                                print('Image ' + post_item['date'] + str(i) + '.jpg saved!')
+                            except error.HTTPError:
+                                print('Image ' + post_item['date'] + str(i) + '.jpg could not be downloaded.')
+                                print(link)
+                    i += 1
+
+            except Exception:
+                print('Failed to store media for post. Error:')
+                traceback.print_exc()
 
 
 def paginate_request(platform, url, request_name):
