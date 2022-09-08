@@ -13,8 +13,19 @@ import traceback
 
 @limits(calls=5, period=60, raise_on_limit=False)
 def api_call(request_url):
-    print(request_url)
     return requests.get(request_url).json()
+
+
+def execute_call(request_url):
+    print(request_url)
+    while True:
+        try:
+            return api_call(request_url)
+        except Exception:
+            print("Failed to obtain or parse JSON response.")
+            print(traceback.format_exc())
+            print("Waiting 10 minutes before retrying...")
+            time.sleep(10 * 60_000)
 
 
 # Loop through result and save images in account folders
@@ -66,7 +77,7 @@ def retrieve_images_for_result(json_result, platform):
 
 
 def paginate_request(platform, url, request_name):
-    api_response = api_call(url)
+    api_response = execute_call(url)
 
     # Loop through pages of response
     while api_response['status'] == 200:
@@ -84,7 +95,7 @@ def paginate_request(platform, url, request_name):
             break
 
         next_request_url = api_response['result']['pagination']['nextPage']
-        api_response = api_call(next_request_url)
+        api_response = execute_call(next_request_url)
 
     if api_response['status'] != 200:
         print(
