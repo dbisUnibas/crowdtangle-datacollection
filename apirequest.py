@@ -25,7 +25,7 @@ def execute_call(request_url):
             print("Failed to obtain or parse JSON response.")
             print(traceback.format_exc())
             print("Waiting 10 minutes before retrying...")
-            time.sleep(10 * 60_000)
+            time.sleep(10 * 60)
 
 
 # Loop through result and save images in account folders
